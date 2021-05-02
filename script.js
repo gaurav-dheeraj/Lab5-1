@@ -8,7 +8,6 @@ var imageInput = document.getElementById("image-input");
 
 var voices = [];
 var voiceSelect = document.querySelector('select');
-console.log(voiceSelect);
 document.querySelector('option').remove();
 var synth = window.speechSynthesis;
 
@@ -30,11 +29,24 @@ function populateVoiceList() {
     voiceSelect.appendChild(option);
   }
   voiceSelect.selectedIndex = selectedIndex;
-  console.log(voiceSelect);
 }
 populateVoiceList();
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+function toggleButtons(){
+  var buttons = document.querySelectorAll("button");
+  console.log(buttons[0].disabled);
+  for(let i = 0; i < buttons.length; i++){ // toggle relevant buttons
+    if(buttons[i].disabled == true){
+      buttons[i].disabled = false;
+    }
+    else {
+      buttons[i].disabled = true;
+    }
+  }
+  console.log(buttons[0].disabled);
 }
 
 
@@ -46,16 +58,7 @@ imageInput.addEventListener('change', () => {
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
   canvas.clearRect(0, 0, canvas.width, canvas.height); //clearing the canvas context
-  console.log(document.querySelectorAll("button"));
-  var buttons = document.querySelectorAll("button"); 
-  for(var i = 0; i < buttons.length; i++){ // toggle relevant buttons
-    if(buttons[i].value == "OFF"){
-      buttons[i].value == "ON";
-    }
-    else {
-      buttons[i].value == "OFF";
-    }
-  }
+  toggleButtons();
   canvas.fillStyle = 'black';                            // this line is actually superfluous, because 'black' is default
   canvas.fillRect(0, 0, ctx.width, ctx.height);
   var dimensions = getDimmensions(ctx.width, ctx.height, img.width, img.height);
@@ -68,7 +71,6 @@ img.addEventListener('load', () => {
 });
 
 var formSubmit = document.getElementById("generate-meme");
-console.log(document.getElementById("generate-meme"));
 formSubmit.addEventListener('submit', function(event) {
   event.preventDefault(); 
   var textTop = document.getElementById("text-top").value;
@@ -77,25 +79,57 @@ formSubmit.addEventListener('submit', function(event) {
   console.log(textBot);
   
   canvas.fillText(textTop, 300, 100, 400);
+  toggleButtons();
 });
 
 var buttonClear = document.querySelector("[type = 'reset']");
-buttonClear.addEventListener('click', event => {
-  var buttons = document.querySelectorAll("button"); 
-  for(var i = 0; i < buttons.length; i++){ // toggle relevant buttons
-    if(buttons[i].value == "OFF"){
-      buttons[i].value == "ON";
-    }
-    else {
-      buttons[i].value == "OFF";
-    }
-  }
-
+buttonClear.addEventListener('click', function() {
+  toggleButtons();
   canvas.clearRect(0, 0, canvas.width, canvas.height); //i think this clears both image and text present
-
 });
 
 var buttonReadText = document.querySelector("[type = 'button']");
+buttonReadText.addEventListener('click', () => {
+  if (synth.speaking) {
+    console.error('speechSynthesis.speaking');
+    return;
+  }
+  if (textTop.value !== '') {
+    var utterThis = new SpeechSynthesisUtterance(textTop.value);
+    utterThis.onend = function (event) {
+      console.log('SpeechSynthesisUtterance.onend');
+    }
+    utterThis.onerror = function (event) {
+      console.error('SpeechSynthesisUtterance.onerror');
+    }
+    var selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
+    for(let i = 0; i < voices.length ; i++) {
+      if(voices[i].name === selectedOption) {
+        utterThis.voice = voices[i];
+        break;
+      }
+    }
+  }
+  synth.speak(utterThis);
+
+  if (textBot.value !== '') {
+    var utterThis2 = new SpeechSynthesisUtterance(textBot.value);
+    utterThis2.onend = function (event) {
+      console.log('SpeechSynthesisUtterance.onend');
+    }
+    utterThis2.onerror = function (event) {
+      console.error('SpeechSynthesisUtterance.onerror');
+    }
+    var selectedOption2 = voiceSelect.selectedOptions[0].getAttribute('data-name');
+    for(let j = 0; j < voices.length ; j++) {
+      if(voices[j].name === selectedOption2) {
+        utterThis2.voice = voices[j];
+        break;
+      }
+    }
+  }
+  synth.speak(utterThis2);
+});
 // const input = document.querySelector('input');
 // const imgFile = document.getElementById('image-input');
 
