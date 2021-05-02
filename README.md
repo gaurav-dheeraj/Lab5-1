@@ -1,12 +1,13 @@
 # CSE110 SP21 Lab 5
 
 ## Author(s):
-- YOUR NAME
+- Joseph Christopher Priyanto
+- Gaurav Dheeraj Kaliaperumal Kalidasan
 
 ## Part 1:
 
-LINK TO YOUR PUBLISHED SITE
+[https://gaurav-dheeraj.github.io/Lab5-1/](https://gaurav-dheeraj.github.io/Lab5-1/)
 
 ## Part 2:
 
-LINK TO YOUR PART 2 REPOSITORY
+[https://github.com/gaurav-dheeraj/github-actions-for-ci/issues/7](https://github.com/gaurav-dheeraj/github-actions-for-ci/issues/7)
