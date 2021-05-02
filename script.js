@@ -2,9 +2,64 @@
 
 const img = new Image(); // used to load image from <input> and draw to canvas
 
+const ctx = document.querySelector("canvas");
+const canvas = ctx.getContext("2d");
+var imageInput = document.getElementById("image-input");
+
+var voices = [];
+var voiceSelect = document.querySelector('select');
+console.log(voiceSelect);
+document.querySelector('option').remove();
+var synth = window.speechSynthesis;
+
+function populateVoiceList() {
+  voiceSelect.disabled = false;
+  voices = synth.getVoices();
+  var selectedIndex = voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
+  voiceSelect.innerHTML = '';
+  for(let i = 0; i < voices.length ; i++) {
+    var option = document.createElement('option');
+    option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+    
+    if(voices[i].default) {
+      option.textContent += ' -- DEFAULT';
+    }
+
+    option.setAttribute('data-lang', voices[i].lang);
+    option.setAttribute('data-name', voices[i].name);
+    voiceSelect.appendChild(option);
+  }
+  voiceSelect.selectedIndex = selectedIndex;
+  console.log(voiceSelect);
+}
+populateVoiceList();
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+
+imageInput.addEventListener('change', () => {
+  img.alt = document.getElementById("image-input").value.split('\\').pop().split('/').pop();
+  img.src = URL.createObjectURL(document.getElementById("image-input").files[0]);
+});
+
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
-  // TODO
+  canvas.clearRect(0, 0, canvas.width, canvas.height); //clearing the canvas context
+  console.log(document.querySelectorAll("button"));
+  var buttons = document.querySelectorAll("button"); 
+  for(var i = 0; i < buttons.length; i++){ // toggle relevant buttons
+    if(buttons[i].value == "OFF"){
+      buttons[i].value == "ON";
+    }
+    else {
+      buttons[i].value == "OFF";
+    }
+  }
+  canvas.fillStyle = 'black';                            // this line is actually superfluous, because 'black' is default
+  canvas.fillRect(0, 0, ctx.width, ctx.height);
+  var dimensions = getDimmensions(ctx.width, ctx.height, img.width, img.height);
+  canvas.drawImage(img, dimensions.startX, dimensions.startY, dimensions.width, dimensions.height);
 
   // Some helpful tips:
   // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
@@ -12,6 +67,43 @@ img.addEventListener('load', () => {
   // - If you draw the image to canvas here, it will update as soon as a new image is selected
 });
 
+var formSubmit = document.getElementById("generate-meme");
+console.log(document.getElementById("generate-meme"));
+formSubmit.addEventListener('submit', function(event) {
+  event.preventDefault(); 
+  var textTop = document.getElementById("text-top").value;
+  var textBot = document.getElementById("text-bottom").value;
+  console.log(textTop); 
+  console.log(textBot);
+  
+  canvas.fillText(textTop, 300, 100, 400);
+});
+
+var buttonClear = document.querySelector("[type = 'reset']");
+buttonClear.addEventListener('click', event => {
+  var buttons = document.querySelectorAll("button"); 
+  for(var i = 0; i < buttons.length; i++){ // toggle relevant buttons
+    if(buttons[i].value == "OFF"){
+      buttons[i].value == "ON";
+    }
+    else {
+      buttons[i].value == "OFF";
+    }
+  }
+
+  canvas.clearRect(0, 0, canvas.width, canvas.height); //i think this clears both image and text present
+
+});
+
+var buttonReadText = document.querySelector("[type = 'button']");
+// const input = document.querySelector('input');
+// const imgFile = document.getElementById('image-input');
+
+// img.addEventListener('change', () => {
+
+
+
+// });
 /**
  * Takes in the dimensions of the canvas and the new image, then calculates the new
  * dimensions of the image so that it fits perfectly into the Canvas and maintains aspect ratio
