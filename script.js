@@ -144,7 +144,7 @@ volumeSlider.addEventListener('input', function () {
     volIcon.src = "./icons/volume-level-3.svg";
   }
 
-  else if (vol >= 36 && vol <= 66) {
+  else if (vol >= 34 && vol <= 66) {
     volIcon.src = "./icons/volume-level-2.svg";
   }
 
