@@ -37,7 +37,6 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
 }
 
 function toggleButtons() {
-  console.log(buttons[0].disabled);
   for (let i = 0; i < buttons.length; i++) { // toggle relevant buttons
     if (buttons[i].disabled == true) {
       buttons[i].disabled = false;
@@ -46,7 +45,6 @@ function toggleButtons() {
       buttons[i].disabled = true;
     }
   }
-  console.log(buttons[0].disabled);
 }
 
 imageInput.addEventListener('change', () => {
@@ -76,8 +74,6 @@ formSubmit.addEventListener('submit', function (event) {
   event.preventDefault();
   var textTop = document.getElementById("text-top").value;
   var textBot = document.getElementById("text-bottom").value;
-  console.log(textTop);
-  console.log(textBot);
 
   canvas.textAlign = 'center';
   canvas.strokeStyle = 'black';
@@ -124,21 +120,17 @@ buttonReadText.addEventListener('click', () => {
   }
   utterThis.pitch = 1;
   utterThis.rate = 1;
-  console.log(utterThisVolume);
   utterThis.volume = utterThisVolume;
-  console.log(utterThis);
   synth.cancel();
   synth.speak(utterThis);
 });
 
 var volumeSlider = document.querySelector("[type = 'range']");
 var volIcon = document.getElementById("volume-group").children[0];
-console.log(volIcon);
 
 volumeSlider.addEventListener('input', function () {
   let vol = volumeSlider.value;
   utterThisVolume = vol / 100;
-  //console.log(vol);
 
   if (vol >= 67 && vol <= 100) {
     volIcon.src = "./icons/volume-level-3.svg";
