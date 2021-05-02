@@ -5,6 +5,7 @@ const img = new Image(); // used to load image from <input> and draw to canvas
 const ctx = document.querySelector("canvas");
 const canvas = ctx.getContext("2d");
 var imageInput = document.getElementById("image-input");
+var buttons = document.querySelectorAll("button");
 
 var voices = [];
 var voiceSelect = document.querySelector('select');
@@ -16,11 +17,11 @@ function populateVoiceList() {
   voices = synth.getVoices();
   var selectedIndex = voiceSelect.selectedIndex < 0 ? 0 : voiceSelect.selectedIndex;
   voiceSelect.innerHTML = '';
-  for(let i = 0; i < voices.length ; i++) {
+  for (let i = 0; i < voices.length; i++) {
     var option = document.createElement('option');
     option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
-    
-    if(voices[i].default) {
+
+    if (voices[i].default) {
       option.textContent += ' -- DEFAULT';
     }
 
@@ -35,11 +36,10 @@ if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = populateVoiceList;
 }
 
-function toggleButtons(){
-  var buttons = document.querySelectorAll("button");
+function toggleButtons() {
   console.log(buttons[0].disabled);
-  for(let i = 0; i < buttons.length; i++){ // toggle relevant buttons
-    if(buttons[i].disabled == true){
+  for (let i = 0; i < buttons.length; i++) { // toggle relevant buttons
+    if (buttons[i].disabled == true) {
       buttons[i].disabled = false;
     }
     else {
@@ -49,7 +49,6 @@ function toggleButtons(){
   console.log(buttons[0].disabled);
 }
 
-
 imageInput.addEventListener('change', () => {
   img.alt = document.getElementById("image-input").value.split('\\').pop().split('/').pop();
   img.src = URL.createObjectURL(document.getElementById("image-input").files[0]);
@@ -58,7 +57,9 @@ imageInput.addEventListener('change', () => {
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
   canvas.clearRect(0, 0, canvas.width, canvas.height); //clearing the canvas context
-  toggleButtons();
+  buttons[0].disabled = false;
+  buttons[1].disabled = true;
+  buttons[2].disabled = true;
   canvas.fillStyle = 'black';                            // this line is actually superfluous, because 'black' is default
   canvas.fillRect(0, 0, ctx.width, ctx.height);
   var dimensions = getDimmensions(ctx.width, ctx.height, img.width, img.height);
@@ -71,31 +72,42 @@ img.addEventListener('load', () => {
 });
 
 var formSubmit = document.getElementById("generate-meme");
-formSubmit.addEventListener('submit', function(event) {
-  event.preventDefault(); 
+formSubmit.addEventListener('submit', function (event) {
+  event.preventDefault();
   var textTop = document.getElementById("text-top").value;
   var textBot = document.getElementById("text-bottom").value;
-  console.log(textTop); 
+  console.log(textTop);
   console.log(textBot);
-  
-  canvas.fillText(textTop, 300, 100, 400);
+
+  canvas.textAlign = 'center';
+  canvas.strokeStyle = 'black';
+  canvas.lineWidth = 2.0;
+  canvas.strokeStyle = 'black';
+  canvas.font = '50px arial';
+  canvas.fillStyle = 'white';
+  canvas.strokeText(textTop, 200, 75, ctx.width);
+  canvas.fillText(textTop, 200, 75, ctx.width);
+  canvas.strokeText(textBot, 200, 375, ctx.width);
+  canvas.fillText(textBot, 200, 375, ctx.width);
   toggleButtons();
 });
 
 var buttonClear = document.querySelector("[type = 'reset']");
-buttonClear.addEventListener('click', function() {
+buttonClear.addEventListener('click', function () {
   toggleButtons();
-  canvas.clearRect(0, 0, canvas.width, canvas.height); //i think this clears both image and text present
+  canvas.clearRect(0, 0, ctx.width, ctx.height); //i think this clears both image and text present
 });
 
 var buttonReadText = document.querySelector("[type = 'button']");
+var utterThisVolume = 1;
 buttonReadText.addEventListener('click', () => {
+  var textUp = document.getElementById("text-top").value + " " + document.getElementById("text-bottom").value;
   if (synth.speaking) {
     console.error('speechSynthesis.speaking');
     return;
   }
-  if (textTop.value !== '') {
-    var utterThis = new SpeechSynthesisUtterance(textTop.value);
+  if (textUp !== '') {
+    var utterThis = new SpeechSynthesisUtterance(textUp);
     utterThis.onend = function (event) {
       console.log('SpeechSynthesisUtterance.onend');
     }
@@ -103,41 +115,49 @@ buttonReadText.addEventListener('click', () => {
       console.error('SpeechSynthesisUtterance.onerror');
     }
     var selectedOption = voiceSelect.selectedOptions[0].getAttribute('data-name');
-    for(let i = 0; i < voices.length ; i++) {
-      if(voices[i].name === selectedOption) {
+    for (let i = 0; i < voices.length; i++) {
+      if (voices[i].name === selectedOption) {
         utterThis.voice = voices[i];
         break;
       }
     }
   }
+  utterThis.pitch = 1;
+  utterThis.rate = 1;
+  console.log(utterThisVolume);
+  utterThis.volume = utterThisVolume;
+  console.log(utterThis);
+  synth.cancel();
   synth.speak(utterThis);
-
-  if (textBot.value !== '') {
-    var utterThis2 = new SpeechSynthesisUtterance(textBot.value);
-    utterThis2.onend = function (event) {
-      console.log('SpeechSynthesisUtterance.onend');
-    }
-    utterThis2.onerror = function (event) {
-      console.error('SpeechSynthesisUtterance.onerror');
-    }
-    var selectedOption2 = voiceSelect.selectedOptions[0].getAttribute('data-name');
-    for(let j = 0; j < voices.length ; j++) {
-      if(voices[j].name === selectedOption2) {
-        utterThis2.voice = voices[j];
-        break;
-      }
-    }
-  }
-  synth.speak(utterThis2);
 });
-// const input = document.querySelector('input');
-// const imgFile = document.getElementById('image-input');
 
-// img.addEventListener('change', () => {
+var volumeSlider = document.querySelector("[type = 'range']");
+var volIcon = document.getElementById("volume-group").children[0];
+console.log(volIcon);
+
+volumeSlider.addEventListener('input', function () {
+  let vol = volumeSlider.value;
+  utterThisVolume = vol / 100;
+  //console.log(vol);
+
+  if (vol >= 67 && vol <= 100) {
+    volIcon.src = "./icons/volume-level-3.svg";
+  }
+
+  else if (vol >= 36 && vol <= 66) {
+    volIcon.src = "./icons/volume-level-2.svg";
+  }
+
+  else if (vol == 0) {
+    volIcon.src = "./icons/volume-level-0.svg";
+  }
+
+  else {
+    volIcon.src = "./icons/volume-level-1.svg";
+  }
+});
 
 
-
-// });
 /**
  * Takes in the dimensions of the canvas and the new image, then calculates the new
  * dimensions of the image so that it fits perfectly into the Canvas and maintains aspect ratio
